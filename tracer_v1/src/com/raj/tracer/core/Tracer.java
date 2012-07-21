@@ -22,8 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -92,12 +90,9 @@ public class Tracer extends RecursiveAction {
 		private Queue<Event> localQueue;
 		boolean isWaiting;
 
-		private long timer;
-
 		Producer(EventQueue queue, Queue<Event> localQueue) {
 			this.jvmRemoteEventQueue = queue;
 			this.localQueue = localQueue;
-			timer = System.currentTimeMillis();
 		}
 
 		@Override
@@ -113,29 +108,18 @@ public class Tracer extends RecursiveAction {
 					eventSet = jvmRemoteEventQueue.remove(10000);
 					isWaiting = false;
 					if (eventSet != null) {
-						EventIterator it = eventSet.eventIterator();
 						localQueue.addAll(eventSet);
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
 				} finally {
 					//if any thread is suspended invoke resume
 		        	if (eventSet != null) {
 		        		eventSet.resume();
 		        	}
-					if (System.currentTimeMillis() - timer > 5000) {
-						System.out.println("In loop producer Local queue:" + localQueue.size() + "waiting for event:" + isWaiting);
-						timer = System.currentTimeMillis();
-					}
 				}
 			}
 			return null;
 
-		}
-
-		@Override
-		public boolean cancel(boolean mayInterruptIfRunning) {
-			return super.cancel(mayInterruptIfRunning);
 		}
 
 	}
@@ -144,7 +128,6 @@ public class Tracer extends RecursiveAction {
 		private static final long serialVersionUID = 1L;
 		private final Queue<Event> localQueue;
 
-		private long timer;
 
 		Consumer(Queue<Event> queue) {
 			this.localQueue = queue;
@@ -153,7 +136,6 @@ public class Tracer extends RecursiveAction {
 		@Override
 		protected Collection<Event> compute() {
 			while (!done) {
-				try {
 					if (!localQueue.isEmpty()) {
 						Event e = localQueue.remove();
 
@@ -161,47 +143,11 @@ public class Tracer extends RecursiveAction {
 						ruleProcessor.executeRules(new EventClause(e));
 						// ruleEngine.addEvent(e);
 					}
-				} catch (Exception e) {
-					e.printStackTrace();
-					stop();
-				} finally {
-					if (System.currentTimeMillis() - timer > 5000) {
-						System.out.println("Consumer Local queue:" + localQueue.size());
-						timer = System.currentTimeMillis();
-					}
-				}
 			}
 			return localQueue;
 		}
 	}
 	
-	class Monitor extends RecursiveTask<String> {
-
-		private Producer p;
-		private Consumer c;
-		
-		private long timer;
-		
-		public Monitor (Producer p, Consumer c) {
-			this.p = p;
-			this.c = c;
-		}
-		@Override
-		protected String compute() {
-			while(!done) {
-				try {
-					Thread.sleep(5000);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-					System.err.println("MONITOR: Consumer Local queue:" + localQueue.size());
-			}
-			return null;
-		}
-		
-	}
-
 	public static void main(String[] args) {
 		Tracer job = new Tracer();
 		job.setMachine("localhost");
@@ -209,7 +155,7 @@ public class Tracer extends RecursiveAction {
 		job.setLocalQueue(new LinkedBlockingQueue<Event>());
 		job.hook();
 		job.getReady();
-//		job.fireMethodEntry("java.lang.*");
+		job.fireMethodEntry("java.lang.*");
 		job.fireThreadStartEvent();
 		job.fireBreakPoint();
 		final ForkJoinPool forkJoinPool = new ForkJoinPool();
@@ -226,31 +172,16 @@ public class Tracer extends RecursiveAction {
 		remoteVirtualMachine.resume();
 	}
 
-	private void resume() {
-		remoteVirtualMachine.resume();
-	}
 
 	@Override
 	protected void compute() {
 
 		Producer p = new Producer(eventQueue, localQueue);
 		Consumer c = new Consumer(localQueue);
-		Monitor m = new Monitor(p, c);
-		m.fork();
 		c.fork();
 		p.fork();
 		
 		try {
-			 final Timer timer = new Timer();
-		        timer.scheduleAtFixedRate(new TimerTask() {
-		            public void run() {
-		                if (done) {
-		                    timer.cancel();
-		                } else {
-		                	
-		                }
-		            }
-		        }, 0, 1000);
 			p.get();
 			c.get();
 		} catch (InterruptedException | ExecutionException e) {
