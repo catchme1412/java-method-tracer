@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.raj.util;
+package com.raj.tracer.core;
 
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
@@ -54,6 +54,10 @@ public class TracerOutput {
         left = BUFSIZ;
         pos = 0;
         need_cr = false;
+    }
+    
+    public FileOutputStream getOutputStream() {
+    	return fos;
     }
 
     // close a file
@@ -103,7 +107,7 @@ public class TracerOutput {
 
     // output a line
 
-    public synchronized void println(String s) throws IOException {
+    public  void println(String s) throws IOException {
         int len = (s == null ? 0 : s.length());
 
         // empty string
