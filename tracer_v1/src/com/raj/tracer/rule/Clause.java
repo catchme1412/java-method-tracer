@@ -1,6 +1,9 @@
 package com.raj.tracer.rule;
 
-public class Clause {
+import com.raj.tracer.core.Observer;
+
+
+public abstract class Clause implements Observer {
 
 	public Object object;
 	

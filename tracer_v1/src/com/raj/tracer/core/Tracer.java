@@ -31,7 +31,6 @@ import java.util.logging.Logger;
 
 import com.raj.tracer.rule.BaseRule;
 import com.raj.tracer.rule.EventClause;
-import com.raj.tracer.rule.FireMethodEntryAction;
 import com.raj.tracer.rule.PrintStackTraceAction;
 import com.raj.tracer.rule.RuleProcessor;
 import com.sun.jdi.AbsentInformationException;
@@ -41,13 +40,11 @@ import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.connect.Connector;
 import com.sun.jdi.connect.IllegalConnectorArgumentsException;
 import com.sun.jdi.event.Event;
-import com.sun.jdi.event.EventIterator;
 import com.sun.jdi.event.EventQueue;
 import com.sun.jdi.event.EventSet;
 import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
-import com.sun.jdi.request.MethodEntryRequest;
 import com.sun.jdi.request.ThreadStartRequest;
 import com.sun.tools.jdi.SocketAttachingConnector;
 
@@ -68,19 +65,14 @@ public class Tracer extends RecursiveAction {
 	private String machine;
 	private String port;
 	private VirtualMachine remoteVirtualMachine;
-	private EventRequestManager eventRequestManager;
 	private RuleProcessor ruleProcessor;
-
-	public EventRequestManager getEventRequestManager() {
-		return eventRequestManager;
-	}
-
+	private EventManager eventManager;
 	private boolean done;
-
 	private Queue<Event> localQueue;
 
 	public Tracer() {
 		ruleProcessor = new RuleProcessor();
+
 	}
 
 	class Producer extends RecursiveTask<Collection<Event>> {
@@ -112,10 +104,10 @@ public class Tracer extends RecursiveAction {
 					}
 				} catch (Exception e) {
 				} finally {
-					//if any thread is suspended invoke resume
-		        	if (eventSet != null) {
-		        		eventSet.resume();
-		        	}
+					// if any thread is suspended invoke resume
+					if (eventSet != null) {
+						eventSet.resume();
+					}
 				}
 			}
 			return null;
@@ -128,7 +120,6 @@ public class Tracer extends RecursiveAction {
 		private static final long serialVersionUID = 1L;
 		private final Queue<Event> localQueue;
 
-
 		Consumer(Queue<Event> queue) {
 			this.localQueue = queue;
 		}
@@ -136,18 +127,20 @@ public class Tracer extends RecursiveAction {
 		@Override
 		protected Collection<Event> compute() {
 			while (!done) {
-					if (!localQueue.isEmpty()) {
-						Event e = localQueue.remove();
-
-						System.out.println("removed:" + localQueue.size() + " :: " + e);
-						ruleProcessor.executeRules(new EventClause(e));
-						// ruleEngine.addEvent(e);
-					}
+				if (!localQueue.isEmpty()) {
+					Event e = localQueue.remove();
+					// System.out.println("Consumer:"+e);
+					// eventObservable.setChanged(true);
+					// eventObservable.notifyObservers(new EventClause(e));
+					// ruleProcessor.executeRules(new EventClause(e));
+					// ruleEngine.addEvent(e);
+					eventManager.notifyEvent(e);
+				}
 			}
 			return localQueue;
 		}
 	}
-	
+
 	public static void main(String[] args) {
 		Tracer job = new Tracer();
 		job.setMachine("localhost");
@@ -166,12 +159,10 @@ public class Tracer extends RecursiveAction {
 	}
 
 	private void getReady() {
-		// TODO Auto-generated method stub
-		eventRequestManager = remoteVirtualMachine.eventRequestManager();
+		eventManager = new EventManager(remoteVirtualMachine.eventRequestManager());
 		eventQueue = remoteVirtualMachine.eventQueue();
 		remoteVirtualMachine.resume();
 	}
-
 
 	@Override
 	protected void compute() {
@@ -180,7 +171,7 @@ public class Tracer extends RecursiveAction {
 		Consumer c = new Consumer(localQueue);
 		c.fork();
 		p.fork();
-		
+
 		try {
 			p.get();
 			c.get();
@@ -266,11 +257,7 @@ public class Tracer extends RecursiveAction {
 	}
 
 	public void fireMethodEntry(String classFilter) {
-		MethodEntryRequest r = eventRequestManager.createMethodEntryRequest();
-		r.addClassFilter(classFilter);
-		r.setSuspendPolicy(EventRequest.SUSPEND_NONE);
-		
-		r.enable();
+		eventManager.fireMethodEntryRequest(classFilter);
 		ruleProcessor.addRule(new BaseRule(new EventClause("MethodEntry"), new PrintStackTraceAction()));
 	}
 
@@ -278,14 +265,11 @@ public class Tracer extends RecursiveAction {
 		List<ReferenceType> stringRef = remoteVirtualMachine.classesByName("java.lang.String");
 		ReferenceType f = stringRef.get(0);
 		try {
-			BreakpointRequest r = eventRequestManager.createBreakpointRequest(f.locationsOfLine(2694).get(0));
-			r.setSuspendPolicy(EventRequest.SUSPEND_ALL);
-			r.setEnabled(true);
-			MethodEntryRequest mr = eventRequestManager.createMethodEntryRequest();
-			mr.addClassFilter("java.lang.*");
-			System.out.println("TTTTTTTTTTTTTT:"+r);
-			FireMethodEntryAction fm = new FireMethodEntryAction(mr);
-			ruleProcessor.addRule(new BaseRule(new EventClause("Breakpoint"), fm));
+			BreakpointRequest r = eventManager.createBreakpointRequest("java.lang.String", 2694);
+
+			// FireMethodEntryAction fm = new FireMethodEntryAction(mr);
+			// ruleProcessor.addRule(new BaseRule(new EventClause("Breakpoint"),
+			// fm));
 		} catch (AbsentInformationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -293,11 +277,7 @@ public class Tracer extends RecursiveAction {
 	}
 
 	public void fireThreadStartEvent() {
-		ThreadStartRequest r = eventRequestManager.createThreadStartRequest();
-		r.setSuspendPolicy(EventRequest.SUSPEND_ALL);
-		r.setEnabled(true);
-		r.enable();
-		System.out.println("TTTTTTTTTTTTTT:" + r);
+		ThreadStartRequest r = eventManager.createThreadStartRequest();
 		PrintStackTraceAction action = new PrintStackTraceAction();
 		action.setMessage("THHHHHHHHHHHHHHHHHHHHHHHHHHHH");
 		ruleProcessor.addRule(new BaseRule(new EventClause("ThreadStart"), action));
@@ -315,10 +295,6 @@ public class Tracer extends RecursiveAction {
 				}
 			}
 		});
-	}
-
-	public void setEventRequestManager(EventRequestManager eventRequestManager) {
-		this.eventRequestManager = eventRequestManager;
 	}
 
 	public void stop() {

@@ -2,6 +2,7 @@ package com.raj.tracer.rule;
 
 
 
+
 public class EventClause extends Clause {
 
 	
@@ -10,11 +11,9 @@ public class EventClause extends Clause {
 	}
 
 	
-	public boolean equals(Object other) {
-		return ((EventClause)other).object.getClass().getName().indexOf(object.toString()) > -1;
+	@Override
+	public void execute(Clause e) {
+		System.out.println("Observable called execute "+ e);
 	}
-	
-	public int hashCode() {
-		return object.hashCode();
-	}
+
 }
