@@ -63,11 +63,15 @@ public class EventManager {
 
 	public void notifyEvent(Event event) {
 		eventObservable.setChanged(true);
-		eventObservable.notifyObservers(new EventClause(event));
+		eventObservable.notifyObservers(event);
 	}
 	
 	public void fireMethodEntryRequest(String classFilter) {
 		createMethodEntryRequest(classFilter).enable();
+	}
+	
+	public void fireThreadStartRequest() {
+		createThreadStartRequest().enable();
 	}
 	
 	public void removeMethodEntryRequest(String classFilter) {

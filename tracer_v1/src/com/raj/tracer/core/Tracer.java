@@ -35,7 +35,6 @@ import com.raj.tracer.rule.PrintStackTraceAction;
 import com.raj.tracer.rule.RuleProcessor;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.Bootstrap;
-import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.connect.Connector;
 import com.sun.jdi.connect.IllegalConnectorArgumentsException;
@@ -43,8 +42,6 @@ import com.sun.jdi.event.Event;
 import com.sun.jdi.event.EventQueue;
 import com.sun.jdi.event.EventSet;
 import com.sun.jdi.request.BreakpointRequest;
-import com.sun.jdi.request.EventRequest;
-import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.ThreadStartRequest;
 import com.sun.tools.jdi.SocketAttachingConnector;
 
@@ -129,11 +126,7 @@ public class Tracer extends RecursiveAction {
 			while (!done) {
 				if (!localQueue.isEmpty()) {
 					Event e = localQueue.remove();
-					// System.out.println("Consumer:"+e);
-					// eventObservable.setChanged(true);
-					// eventObservable.notifyObservers(new EventClause(e));
-					// ruleProcessor.executeRules(new EventClause(e));
-					// ruleEngine.addEvent(e);
+					System.out.println("Consumer:" + e);
 					eventManager.notifyEvent(e);
 				}
 			}
@@ -141,7 +134,7 @@ public class Tracer extends RecursiveAction {
 		}
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws AbsentInformationException {
 		Tracer job = new Tracer();
 		job.setMachine("localhost");
 		job.setPort("8000");
@@ -261,26 +254,14 @@ public class Tracer extends RecursiveAction {
 		ruleProcessor.addRule(new BaseRule(new EventClause("MethodEntry"), new PrintStackTraceAction()));
 	}
 
-	public void fireBreakPoint() {
-		List<ReferenceType> stringRef = remoteVirtualMachine.classesByName("java.lang.String");
-		ReferenceType f = stringRef.get(0);
-		try {
-			BreakpointRequest r = eventManager.createBreakpointRequest("java.lang.String", 2694);
-
-			// FireMethodEntryAction fm = new FireMethodEntryAction(mr);
-			// ruleProcessor.addRule(new BaseRule(new EventClause("Breakpoint"),
-			// fm));
-		} catch (AbsentInformationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public void fireBreakPoint() throws AbsentInformationException {
+		BreakpointRequest r = eventManager.createBreakpointRequest("java.lang.String", 2694);
 	}
 
 	public void fireThreadStartEvent() {
-		ThreadStartRequest r = eventManager.createThreadStartRequest();
-		PrintStackTraceAction action = new PrintStackTraceAction();
-		action.setMessage("THHHHHHHHHHHHHHHHHHHHHHHHHHHH");
-		ruleProcessor.addRule(new BaseRule(new EventClause("ThreadStart"), action));
+		eventManager.fireThreadStartRequest();
+//		PrintStackTraceAction action = new PrintStackTraceAction();
+//		ruleProcessor.addRule(new BaseRule(new EventClause("ThreadStart"), action));
 	}
 
 	private static void addShutdownHook() {

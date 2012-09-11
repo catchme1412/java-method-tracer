@@ -1,9 +1,9 @@
 package com.raj.tracer.rule;
 
-import com.raj.tracer.core.Observer;
+import com.raj.tracer.core.EventObserver;
 
 
-public abstract class Clause implements Observer {
+public abstract class Clause implements EventObserver {
 
 	public Object object;
 	
