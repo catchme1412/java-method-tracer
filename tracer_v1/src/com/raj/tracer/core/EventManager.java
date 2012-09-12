@@ -23,8 +23,6 @@ public class EventManager {
 
 	private Observable eventObservable;
 	
-	
-	
 	public EventManager(EventRequestManager eventRequestManager) {
 		requestMap = new HashMap<>();
 		this.eventRequestManager = eventRequestManager;
