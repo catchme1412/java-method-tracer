@@ -41,8 +41,6 @@ import com.sun.jdi.connect.IllegalConnectorArgumentsException;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.EventQueue;
 import com.sun.jdi.event.EventSet;
-import com.sun.jdi.request.BreakpointRequest;
-import com.sun.jdi.request.ThreadStartRequest;
 import com.sun.tools.jdi.SocketAttachingConnector;
 
 /**
@@ -255,7 +253,7 @@ public class Tracer extends RecursiveAction {
 	}
 
 	public void fireBreakPoint() throws AbsentInformationException {
-		BreakpointRequest r = eventManager.createBreakpointRequest("java.lang.String", 2694);
+		eventManager.createBreakpointRequest("java.lang.String", 2694);
 	}
 
 	public void fireThreadStartEvent() {

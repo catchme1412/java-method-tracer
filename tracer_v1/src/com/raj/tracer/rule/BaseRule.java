@@ -34,4 +34,9 @@ public class BaseRule implements Rule {
 		return clause;
 	}
 
+	@Override
+	public int executionCount() {
+		return 1;
+	}
+
 }
