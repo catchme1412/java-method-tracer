@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.raj.tracer.rule.EventClause;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.event.Event;
@@ -18,16 +17,16 @@ import com.sun.jdi.request.ThreadStartRequest;
 public class EventManager {
 
 	private EventRequestManager eventRequestManager;
-	
+
 	private Map<String, EventRequest> requestMap;
 
 	private Observable eventObservable;
-	
+
 	public EventManager(EventRequestManager eventRequestManager) {
 		requestMap = new HashMap<>();
 		this.eventRequestManager = eventRequestManager;
 		eventObservable = new Observable();
-		eventObservable.addObserver(new EventClause(new Object()));
+		eventObservable.addObserver(new EventObserverImpl());
 	}
 
 	public MethodEntryRequest createMethodEntryRequest(String classFilter) {
@@ -63,17 +62,17 @@ public class EventManager {
 		eventObservable.setChanged(true);
 		eventObservable.notifyObservers(event);
 	}
-	
+
 	public void fireMethodEntryRequest(String classFilter) {
 		createMethodEntryRequest(classFilter).enable();
 	}
-	
+
 	public void fireThreadStartRequest() {
 		createThreadStartRequest().enable();
 	}
-	
+
 	public void removeMethodEntryRequest(String classFilter) {
 		eventRequestManager.methodEntryRequests().remove(createMethodEntryRequest(classFilter));
 	}
-	
+
 }
