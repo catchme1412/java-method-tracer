@@ -34,7 +34,7 @@ public class Observable {
 		setChanged(false);
 
 		for (EventObserver observer : obs) {
-			if (observer.isMatch(event)){
+			if (observer.isMatch(event)) {
 				observer.execute(event);
 			}
 		}

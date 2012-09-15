@@ -33,7 +33,7 @@ public class EventManager {
 	public void addObserver(EventObserver eventObserver) {
 		eventObservable.addObserver(eventObserver);
 	}
-	
+
 	public MethodEntryRequest createMethodEntryRequest(String classFilter) {
 		MethodEntryRequest r = eventRequestManager.createMethodEntryRequest();
 		r.addClassFilter(classFilter);

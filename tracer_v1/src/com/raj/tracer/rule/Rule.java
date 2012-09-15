@@ -7,7 +7,7 @@ public interface Rule {
 	public boolean isMatched(Clause criteria);
 
 	public Action getAction();
-	
+
 	public int executionCount();
 
 }

@@ -13,7 +13,9 @@ public interface EventObserver {
 	public void execute(Event e);
 
 	public boolean isMatch(Event event);
-	
+
 	public EventRequestCriteria getEventRequestCriteria();
+
+	public void log(String msg);
 
 }

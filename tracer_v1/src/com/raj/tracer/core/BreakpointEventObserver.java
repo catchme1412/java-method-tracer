@@ -2,7 +2,6 @@ package com.raj.tracer.core;
 
 import com.sun.jdi.event.BreakpointEvent;
 import com.sun.jdi.event.Event;
-import com.sun.jdi.request.MethodEntryRequest;
 
 public class BreakpointEventObserver extends AbstractEventObserver {
 

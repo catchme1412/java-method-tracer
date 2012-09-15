@@ -30,7 +30,6 @@ import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
 import java.util.logging.Logger;
 
-import com.raj.tracer.rule.RuleProcessor;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.Bootstrap;
 import com.sun.jdi.VirtualMachine;
@@ -58,13 +57,11 @@ public class Tracer extends RecursiveAction {
 	private String machine;
 	private String port;
 	private VirtualMachine remoteVirtualMachine;
-	private RuleProcessor ruleProcessor;
 	private EventManager eventManager;
 	private boolean done;
 	private Queue<Event> localQueue;
 
 	public Tracer() {
-		ruleProcessor = new RuleProcessor();
 		new Thread(new Command()).start();
 	}
 
@@ -131,9 +128,11 @@ public class Tracer extends RecursiveAction {
 	}
 
 	class Command implements Runnable {
-		private static final long serialVersionUID = 1L;
+		private Scanner readUserInput;
 
-		
+		Command() {
+			readUserInput = new Scanner(System.in);
+		}
 
 		@Override
 		public void run() {
@@ -145,18 +144,15 @@ public class Tracer extends RecursiveAction {
 				// scan text
 				// System.in is mean, we will receive input from standard
 				// input stream
-				Scanner readUserInput = new Scanner(System.in);
 				st = readUserInput.nextLine();
-				System.out.println("readed the command" + st);
-				readUserInput.close();
+				System.out.println(">>>>>>>>>>>>>>>>>>>readed the command" + st);
 			}
 		}
 	}
 
 	public static void main(String[] args) throws AbsentInformationException {
 		Tracer job = new Tracer();
-		
-		
+
 		job.setMachine("localhost");
 		job.setPort("8000");
 		job.setLocalQueue(new LinkedBlockingQueue<Event>());
@@ -183,7 +179,6 @@ public class Tracer extends RecursiveAction {
 
 		Producer p = new Producer(eventQueue, localQueue);
 		Consumer c = new Consumer(localQueue);
-		Command cmd = new Command();
 		c.fork();
 		p.fork();
 		try {

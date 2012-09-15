@@ -14,12 +14,12 @@ public class MethodEntryRequestCriteria extends EventRequestCriteria {
 	private List<String> inclusionFilterList;
 	private List<String> exclusionFilterList;
 
-	public MethodEntryRequestCriteria (String inclusionFilter) {
+	public MethodEntryRequestCriteria(String inclusionFilter) {
 		inclusionFilterList = new ArrayList<>();
 		inclusionFilterList.add(inclusionFilter);
 	}
-	
-	public MethodEntryRequestCriteria (String inclusionFilter[]) {
+
+	public MethodEntryRequestCriteria(String inclusionFilter[]) {
 		inclusionFilterList = new ArrayList<>();
 		inclusionFilterList.addAll(Arrays.asList(inclusionFilter));
 	}
@@ -40,11 +40,11 @@ public class MethodEntryRequestCriteria extends EventRequestCriteria {
 	public void setInclusionFilterList(List<String> inclusionFilterList) {
 		this.inclusionFilterList = inclusionFilterList;
 	}
-	
+
 	public void addExclusionFilter(String classFilter) {
 		exclusionFilterList.add(classFilter);
 	}
-	
+
 	public void addInclusionFilter(String classFilter) {
 		inclusionFilterList.add(classFilter);
 	}

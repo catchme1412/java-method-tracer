@@ -1,6 +1,5 @@
 package com.raj.tracer.rule;
 
-
 public abstract class Clause {
 
 	public Object object;

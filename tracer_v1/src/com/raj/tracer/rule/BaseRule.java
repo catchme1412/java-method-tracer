@@ -23,7 +23,8 @@ public class BaseRule implements Rule {
 	}
 
 	/**
-	 * @param action the action to set
+	 * @param action
+	 *            the action to set
 	 */
 	public void setAction(Action action) {
 		this.action = action;

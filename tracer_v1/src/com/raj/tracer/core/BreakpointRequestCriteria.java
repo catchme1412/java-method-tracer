@@ -17,6 +17,7 @@ public class BreakpointRequestCriteria extends EventRequestCriteria {
 		this.className = className;
 		this.lineNumber = lineNumber;
 	}
+
 	@Override
 	public EventRequest createEventRequest(EventRequestManager eventRequestManager) {
 		BreakpointRequest r = null;

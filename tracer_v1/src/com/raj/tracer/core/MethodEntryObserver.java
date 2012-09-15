@@ -11,7 +11,7 @@ public class MethodEntryObserver extends AbstractEventObserver {
 
 	@Override
 	public void execute(Event e) {
-		System.out.println("Method Entry observer:" + e);
+		log("Method Entry observer:" + e);
 	}
 
 	@Override
