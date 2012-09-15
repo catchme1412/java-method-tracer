@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -29,9 +30,6 @@ import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
 import java.util.logging.Logger;
 
-import com.raj.tracer.rule.BaseRule;
-import com.raj.tracer.rule.EventClause;
-import com.raj.tracer.rule.PrintStackTraceAction;
 import com.raj.tracer.rule.RuleProcessor;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.Bootstrap;
@@ -67,7 +65,7 @@ public class Tracer extends RecursiveAction {
 
 	public Tracer() {
 		ruleProcessor = new RuleProcessor();
-
+		new Thread(new Command()).start();
 	}
 
 	class Producer extends RecursiveTask<Collection<Event>> {
@@ -124,7 +122,7 @@ public class Tracer extends RecursiveAction {
 			while (!done) {
 				if (!localQueue.isEmpty()) {
 					Event e = localQueue.remove();
-					System.out.println("Consumer:" + e);
+					// System.out.println("Consumer:" + e);
 					eventManager.notifyEvent(e);
 				}
 			}
@@ -132,8 +130,33 @@ public class Tracer extends RecursiveAction {
 		}
 	}
 
+	class Command implements Runnable {
+		private static final long serialVersionUID = 1L;
+
+		
+
+		@Override
+		public void run() {
+			while (true) {
+				String st = null;
+				System.out.println("Waiting for input");
+				// Create a scanner object
+				// Scanner is a predefined class in java that will be use to
+				// scan text
+				// System.in is mean, we will receive input from standard
+				// input stream
+				Scanner readUserInput = new Scanner(System.in);
+				st = readUserInput.nextLine();
+				System.out.println("readed the command" + st);
+				readUserInput.close();
+			}
+		}
+	}
+
 	public static void main(String[] args) throws AbsentInformationException {
 		Tracer job = new Tracer();
+		
+		
 		job.setMachine("localhost");
 		job.setPort("8000");
 		job.setLocalQueue(new LinkedBlockingQueue<Event>());
@@ -160,9 +183,9 @@ public class Tracer extends RecursiveAction {
 
 		Producer p = new Producer(eventQueue, localQueue);
 		Consumer c = new Consumer(localQueue);
+		Command cmd = new Command();
 		c.fork();
 		p.fork();
-
 		try {
 			p.get();
 			c.get();
@@ -249,7 +272,8 @@ public class Tracer extends RecursiveAction {
 
 	public void fireMethodEntry(String classFilter) {
 		eventManager.fireMethodEntryRequest(classFilter);
-		ruleProcessor.addRule(new BaseRule(new EventClause("MethodEntry"), new PrintStackTraceAction()));
+		// ruleProcessor.addRule(new BaseRule(new EventClause("MethodEntry"),
+		// new PrintStackTraceAction()));
 	}
 
 	public void fireBreakPoint() throws AbsentInformationException {
@@ -258,8 +282,9 @@ public class Tracer extends RecursiveAction {
 
 	public void fireThreadStartEvent() {
 		eventManager.fireThreadStartRequest();
-//		PrintStackTraceAction action = new PrintStackTraceAction();
-//		ruleProcessor.addRule(new BaseRule(new EventClause("ThreadStart"), action));
+		// PrintStackTraceAction action = new PrintStackTraceAction();
+		// ruleProcessor.addRule(new BaseRule(new EventClause("ThreadStart"),
+		// action));
 	}
 
 	private static void addShutdownHook() {

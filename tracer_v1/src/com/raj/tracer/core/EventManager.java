@@ -1,8 +1,9 @@
 package com.raj.tracer.core;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ReferenceType;
@@ -18,17 +19,21 @@ public class EventManager {
 
 	private EventRequestManager eventRequestManager;
 
-	private Map<String, EventRequest> requestMap;
-
 	private Observable eventObservable;
 
 	public EventManager(EventRequestManager eventRequestManager) {
-		requestMap = new HashMap<>();
 		this.eventRequestManager = eventRequestManager;
 		eventObservable = new Observable();
-		eventObservable.addObserver(new EventObserverImpl());
+		MethodEntryRequestCriteria methodEntryRequestCriteria;
+		methodEntryRequestCriteria = new MethodEntryRequestCriteria("java.lang.*");
+		eventObservable.addObserver(new MethodEntryObserver(methodEntryRequestCriteria));
+		ScriptEngine se = new ScriptEngineManager().getEngineByExtension("js");
 	}
 
+	public void addObserver(EventObserver eventObserver) {
+		eventObservable.addObserver(eventObserver);
+	}
+	
 	public MethodEntryRequest createMethodEntryRequest(String classFilter) {
 		MethodEntryRequest r = eventRequestManager.createMethodEntryRequest();
 		r.addClassFilter(classFilter);
@@ -63,8 +68,10 @@ public class EventManager {
 		eventObservable.notifyObservers(event);
 	}
 
-	public void fireMethodEntryRequest(String classFilter) {
-		createMethodEntryRequest(classFilter).enable();
+	public MethodEntryRequestCriteria fireMethodEntryRequest(String classFilter) {
+		MethodEntryRequestCriteria eventRequestCriteria = new MethodEntryRequestCriteria(classFilter);
+		eventRequestCriteria.createEventRequest(eventRequestManager).enable();
+		return eventRequestCriteria;
 	}
 
 	public void fireThreadStartRequest() {

@@ -1,6 +1,10 @@
 package com.raj.tracer.rule;
 
-public interface Action {
+import com.sun.jdi.event.Event;
 
-	public void execute(RuleSession input);
+public class Action {
+
+	public void execute(Event event) {
+		
+	}
 }

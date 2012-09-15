@@ -23,7 +23,7 @@ public class RuleProcessor {
 
 		List<Action> rules = fireRules(ruleGroupName, ruleInput);
 		for (Action a : rules) {
-			a.execute(session);
+//			a.execute(session);
 		}
 	}
 

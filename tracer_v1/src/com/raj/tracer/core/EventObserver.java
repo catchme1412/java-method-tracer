@@ -4,10 +4,16 @@ import com.sun.jdi.event.Event;
 
 /**
  * Inspired by java.util.Observer.
+ * 
  * @author rkv
- *
+ * 
  */
 public interface EventObserver {
+
 	public void execute(Event e);
+
+	public boolean isMatch(Event event);
 	
+	public EventRequestCriteria getEventRequestCriteria();
+
 }

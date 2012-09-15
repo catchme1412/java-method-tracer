@@ -2,7 +2,6 @@ package com.raj.tracer.core;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import com.sun.jdi.event.Event;
 
@@ -12,7 +11,6 @@ import com.sun.jdi.event.Event;
 public class Observable {
 	private boolean changed = false;
 	private List<EventObserver> obs;
-	private Map<String, List<EventObserver>> m;
 
 	public Observable() {
 		obs = new ArrayList<EventObserver>();
@@ -29,14 +27,16 @@ public class Observable {
 		obs.remove(o);
 	}
 
-	public void notifyObservers(Event arg) {
+	public void notifyObservers(Event event) {
 		if (!changed) {
 			return;
 		}
 		setChanged(false);
 
 		for (EventObserver observer : obs) {
-			observer.execute(arg);
+			if (observer.isMatch(event)){
+				observer.execute(event);
+			}
 		}
 	}
 
