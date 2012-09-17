@@ -4,19 +4,26 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 
+import com.raj.tracer.rule.Action;
+import com.sun.jdi.event.Event;
+
+
 public abstract class AbstractEventObserver implements EventObserver {
 
 	private EventRequestCriteria eventRequestCriteria;
 
+	private Action onEventAction;
+	
 	private PrintStream printStream;
 	
-	public AbstractEventObserver () {
-		try {
-			File file = new File("/tmp/test.log");
-			printStream = new PrintStream(file);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
+	public AbstractEventObserver (Action onEventAction) {
+		this.onEventAction = onEventAction;
+//		try {
+//			File file = new File("/tmp/test.log");
+//			printStream = new PrintStream(file);
+//		} catch (FileNotFoundException e) {
+//			e.printStackTrace();
+//		}
 	}
 
 	public AbstractEventObserver(EventRequestCriteria eventRequestCriteria) {
@@ -26,6 +33,11 @@ public abstract class AbstractEventObserver implements EventObserver {
 	@Override
 	public EventRequestCriteria getEventRequestCriteria() {
 		return eventRequestCriteria;
+	}
+	
+	@Override 
+	public void performAction(Event event) {
+		onEventAction.execute(event);
 	}
 
 	@Override

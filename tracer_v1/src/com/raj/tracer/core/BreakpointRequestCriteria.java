@@ -2,6 +2,7 @@ package com.raj.tracer.core;
 
 import java.util.List;
 
+import com.raj.tracer.rule.Action;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.request.BreakpointRequest;
@@ -13,7 +14,8 @@ public class BreakpointRequestCriteria extends EventRequestCriteria {
 	private String className;
 	private int lineNumber;
 
-	public BreakpointRequestCriteria(String className, int lineNumber) {
+	public BreakpointRequestCriteria(String className, int lineNumber, Action onEventAction) {
+		super(onEventAction);
 		this.className = className;
 		this.lineNumber = lineNumber;
 	}

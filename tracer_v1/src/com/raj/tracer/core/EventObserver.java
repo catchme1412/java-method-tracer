@@ -11,6 +11,8 @@ import com.sun.jdi.event.Event;
 public interface EventObserver {
 
 	public void execute(Event e);
+	
+	public void performAction(Event e);
 
 	public boolean isMatch(Event event);
 

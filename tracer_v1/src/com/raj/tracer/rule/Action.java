@@ -2,9 +2,7 @@ package com.raj.tracer.rule;
 
 import com.sun.jdi.event.Event;
 
-public class Action {
+public interface Action {
 
-	public void execute(Event event) {
-
-	}
+	public void execute(Event event);
 }

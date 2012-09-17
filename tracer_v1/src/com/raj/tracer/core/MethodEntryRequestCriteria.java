@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import com.raj.tracer.rule.Action;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.MethodEntryRequest;
@@ -14,12 +15,14 @@ public class MethodEntryRequestCriteria extends EventRequestCriteria {
 	private List<String> inclusionFilterList;
 	private List<String> exclusionFilterList;
 
-	public MethodEntryRequestCriteria(String inclusionFilter) {
+	public MethodEntryRequestCriteria(String inclusionFilter, EventPrintAction eventPrintAction) {
+		super(eventPrintAction);
 		inclusionFilterList = new ArrayList<>();
 		inclusionFilterList.add(inclusionFilter);
 	}
 
-	public MethodEntryRequestCriteria(String inclusionFilter[]) {
+	public MethodEntryRequestCriteria(String inclusionFilter[], Action onEventAction) {
+		super(onEventAction);
 		inclusionFilterList = new ArrayList<>();
 		inclusionFilterList.addAll(Arrays.asList(inclusionFilter));
 	}
