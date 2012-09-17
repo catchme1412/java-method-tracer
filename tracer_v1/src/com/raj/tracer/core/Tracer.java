@@ -145,14 +145,14 @@ public class Tracer extends RecursiveAction {
 				// System.in is mean, we will receive input from standard
 				// input stream
 				st = readUserInput.nextLine();
-				System.out.println(">>>>>>>>>>>>>>>>>>>readed the command" + st);
+				System.out.println(">>>>>>>>>>>>>>>>>>>readed the command:" + st);
 			}
 		}
 	}
 
 	public static void main(String[] args) throws AbsentInformationException {
+		System.out.println("FFFFFFFFFFF");
 		Tracer job = new Tracer();
-
 		job.setMachine("localhost");
 		job.setPort("8000");
 		job.setLocalQueue(new LinkedBlockingQueue<Event>());

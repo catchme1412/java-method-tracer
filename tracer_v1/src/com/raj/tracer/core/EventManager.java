@@ -2,9 +2,6 @@ package com.raj.tracer.core;
 
 import java.util.List;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.event.Event;
@@ -25,9 +22,9 @@ public class EventManager {
 		this.eventRequestManager = eventRequestManager;
 		eventObservable = new Observable();
 		MethodEntryRequestCriteria methodEntryRequestCriteria;
-		methodEntryRequestCriteria = new MethodEntryRequestCriteria("java.lang.*");
+		EventPrintAction eventPrintAction = new EventPrintAction();
+		methodEntryRequestCriteria = new MethodEntryRequestCriteria("java.lang.*", eventPrintAction);
 		eventObservable.addObserver(new MethodEntryObserver(methodEntryRequestCriteria));
-		ScriptEngine se = new ScriptEngineManager().getEngineByExtension("js");
 	}
 
 	public void addObserver(EventObserver eventObserver) {
@@ -69,7 +66,7 @@ public class EventManager {
 	}
 
 	public MethodEntryRequestCriteria fireMethodEntryRequest(String classFilter) {
-		MethodEntryRequestCriteria eventRequestCriteria = new MethodEntryRequestCriteria(classFilter);
+		MethodEntryRequestCriteria eventRequestCriteria = new MethodEntryRequestCriteria(classFilter, null);
 		eventRequestCriteria.createEventRequest(eventRequestManager).enable();
 		return eventRequestCriteria;
 	}

@@ -36,6 +36,7 @@ public class Observable {
 		for (EventObserver observer : obs) {
 			if (observer.isMatch(event)) {
 				observer.execute(event);
+				observer.performAction(event);
 			}
 		}
 	}
