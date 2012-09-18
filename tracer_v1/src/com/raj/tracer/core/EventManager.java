@@ -49,8 +49,11 @@ public class EventManager {
 		BreakpointRequest r = null;
 		List<ReferenceType> ref = eventRequestManager.virtualMachine().classesByName(clazz);
 		ReferenceType f = ref.get(0);
-		r = eventRequestManager.createBreakpointRequest(f.locationsOfLine(lineNumber).get(0));
-		r.setSuspendPolicy(EventRequest.SUSPEND_NONE);
+		for (int i = lineNumber - 1  ; i++ < lineNumber + 100;) {
+			r = eventRequestManager.createBreakpointRequest(f.locationsOfLine(i).get(0));
+			r.setSuspendPolicy(EventRequest.SUSPEND_NONE);
+			return r;
+		}
 		return r;
 	}
 

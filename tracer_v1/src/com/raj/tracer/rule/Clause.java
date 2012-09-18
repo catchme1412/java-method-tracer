@@ -8,10 +8,12 @@ public abstract class Clause {
 		this.object = object;
 	}
 
+	@Override
 	public boolean equals(Object other) {
 		return this.equals(other);
 	}
 
+	@Override
 	public int hashCode() {
 		return object.hashCode();
 	}

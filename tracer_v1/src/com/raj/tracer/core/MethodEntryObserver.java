@@ -6,12 +6,12 @@ import com.sun.jdi.request.MethodEntryRequest;
 public class MethodEntryObserver extends AbstractEventObserver {
 
 	public MethodEntryObserver(MethodEntryRequestCriteria methodEntryRequestCriteria) {
-		super(methodEntryRequestCriteria);
+		super(methodEntryRequestCriteria.getOnEventAction());
 	}
 
 	@Override
-	public void execute(Event e) {
-		log("Method Entry observer:" + e);
+	public void execute(Event event) {
+		getOnEventAction().execute(event);
 	}
 
 	@Override

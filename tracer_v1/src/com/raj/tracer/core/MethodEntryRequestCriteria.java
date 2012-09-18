@@ -15,8 +15,8 @@ public class MethodEntryRequestCriteria extends EventRequestCriteria {
 	private List<String> inclusionFilterList;
 	private List<String> exclusionFilterList;
 
-	public MethodEntryRequestCriteria(String inclusionFilter, EventPrintAction eventPrintAction) {
-		super(eventPrintAction);
+	public MethodEntryRequestCriteria(String inclusionFilter, Action onEventAction) {
+		super(onEventAction);
 		inclusionFilterList = new ArrayList<>();
 		inclusionFilterList.add(inclusionFilter);
 	}

@@ -11,6 +11,7 @@ public class BaseRule implements Rule {
 		this.setAction(action);
 	}
 
+	@Override
 	public boolean isMatched(Clause criteria) {
 		return clause.equals(criteria);
 	}
@@ -18,6 +19,7 @@ public class BaseRule implements Rule {
 	/**
 	 * @return the action
 	 */
+	@Override
 	public Action getAction() {
 		return action;
 	}

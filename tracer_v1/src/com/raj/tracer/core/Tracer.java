@@ -98,7 +98,8 @@ public class Tracer extends RecursiveAction {
 					if (eventSet != null) {
 						eventSet.resume();
 					}
-				}
+				} 
+				
 			}
 			return null;
 
@@ -131,7 +132,6 @@ public class Tracer extends RecursiveAction {
 		private Scanner readUserInput;
 
 		Command() {
-			readUserInput = new Scanner(System.in);
 		}
 
 		@Override
@@ -144,6 +144,7 @@ public class Tracer extends RecursiveAction {
 				// scan text
 				// System.in is mean, we will receive input from standard
 				// input stream
+				readUserInput = new Scanner(System.in);
 				st = readUserInput.nextLine();
 				System.out.println(">>>>>>>>>>>>>>>>>>>readed the command" + st);
 			}
@@ -152,7 +153,7 @@ public class Tracer extends RecursiveAction {
 
 	public static void main(String[] args) throws AbsentInformationException {
 		Tracer job = new Tracer();
-
+		System.out.println("OOOOOOOOOOOOOOOOOOoo");
 		job.setMachine("localhost");
 		job.setPort("8000");
 		job.setLocalQueue(new LinkedBlockingQueue<Event>());
@@ -160,7 +161,7 @@ public class Tracer extends RecursiveAction {
 		job.getReady();
 		job.fireMethodEntry("java.lang.*");
 		job.fireThreadStartEvent();
-		job.fireBreakPoint();
+//		job.fireBreakPoint();
 		final ForkJoinPool forkJoinPool = new ForkJoinPool();
 		forkJoinPool.invoke(job);
 		job.join();
@@ -195,7 +196,7 @@ public class Tracer extends RecursiveAction {
 		List<Connector> connectors = Bootstrap.virtualMachineManager().allConnectors();
 		Iterator<Connector> iter = connectors.iterator();
 		while (iter.hasNext()) {
-			Connector connector = (Connector) iter.next();
+			Connector connector = iter.next();
 			System.out.println("connector:" + connector);
 			if ("com.sun.jdi.SocketAttach".equals(connector.name())) {
 				return (SocketAttachingConnector) connector;
@@ -225,9 +226,9 @@ public class Tracer extends RecursiveAction {
 	}
 
 	private void setConnectionInfo(Map<String, Connector.Argument> connectorArguments) {
-		Connector.Argument host = (Connector.Argument) connectorArguments.get("hostname");
-		Connector.Argument portArg = (Connector.Argument) connectorArguments.get("port");
-		Connector.Argument timeout = (Connector.Argument) connectorArguments.get("timeout");
+		Connector.Argument host = connectorArguments.get("hostname");
+		Connector.Argument portArg = connectorArguments.get("port");
+		Connector.Argument timeout = connectorArguments.get("timeout");
 		timeout.setValue(String.valueOf(30));
 
 		host.setValue(machine);
@@ -272,7 +273,7 @@ public class Tracer extends RecursiveAction {
 	}
 
 	public void fireBreakPoint() throws AbsentInformationException {
-		eventManager.createBreakpointRequest("java.lang.String", 2694);
+		//eventManager.createBreakpointRequest("java.lang.String", 2697);
 	}
 
 	public void fireThreadStartEvent() {
@@ -284,6 +285,7 @@ public class Tracer extends RecursiveAction {
 
 	private static void addShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
 			public void run() {
 				logger.info("\n\nStarting clean shutdown...");
 				try {

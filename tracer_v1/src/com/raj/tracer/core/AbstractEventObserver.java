@@ -1,7 +1,5 @@
 package com.raj.tracer.core;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.PrintStream;
 
 import com.raj.tracer.rule.Action;
@@ -45,5 +43,13 @@ public abstract class AbstractEventObserver implements EventObserver {
 //		printStream.append(msg);
 //		printStream.flush();
 		System.out.println(msg);
+	}
+
+	public Action getOnEventAction() {
+		return onEventAction;
+	}
+
+	public void setOnEventAction(Action onEventAction) {
+		this.onEventAction = onEventAction;
 	}
 }
