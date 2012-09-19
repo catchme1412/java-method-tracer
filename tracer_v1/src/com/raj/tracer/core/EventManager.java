@@ -1,6 +1,8 @@
 package com.raj.tracer.core;
 
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ReferenceType;
@@ -15,16 +17,19 @@ import com.sun.jdi.request.ThreadStartRequest;
 public class EventManager {
 
 	private EventRequestManager eventRequestManager;
-
+	private long eventCount;
 	private Observable eventObservable;
+	private Queue<Event> eventList;
 
 	public EventManager(EventRequestManager eventRequestManager) {
+		eventList = new LinkedBlockingQueue<Event>();
 		this.eventRequestManager = eventRequestManager;
 		eventObservable = new Observable();
-		MethodEntryRequestCriteria methodEntryRequestCriteria;
 		EventPrintAction eventPrintAction = new EventPrintAction();
-		methodEntryRequestCriteria = new MethodEntryRequestCriteria("java.lang.*", eventPrintAction);
-		eventObservable.addObserver(new MethodEntryObserver(methodEntryRequestCriteria));
+		ThreadStartRequestCriteria t = new ThreadStartRequestCriteria(eventPrintAction);
+		eventObservable.addObserver(new ThreadStartEventObserver(t));
+		BreakpointRequestCriteria b = new BreakpointRequestCriteria("java.lang.Thread", 673, eventPrintAction);
+		eventObservable.addObserver(new BreakpointEventObserver(b));
 	}
 
 	public void addObserver(EventObserver eventObserver) {
@@ -49,10 +54,13 @@ public class EventManager {
 		BreakpointRequest r = null;
 		List<ReferenceType> ref = eventRequestManager.virtualMachine().classesByName(clazz);
 		ReferenceType f = ref.get(0);
-		for (int i = lineNumber - 1  ; i++ < lineNumber + 100;) {
-			r = eventRequestManager.createBreakpointRequest(f.locationsOfLine(i).get(0));
-			r.setSuspendPolicy(EventRequest.SUSPEND_NONE);
-			return r;
+		for (int i = lineNumber - 1; i++ < lineNumber + 100;) {
+			try {
+				r = eventRequestManager.createBreakpointRequest(f.locationsOfLine(i).get(0));
+				r.setSuspendPolicy(EventRequest.SUSPEND_NONE);
+				return r;
+			} catch (Exception e) {
+			}
 		}
 		return r;
 	}
@@ -64,8 +72,10 @@ public class EventManager {
 	}
 
 	public void notifyEvent(Event event) {
+		eventCount++;
 		eventObservable.setChanged(true);
-		eventObservable.notifyObservers(event);
+		eventList.add(event);
+//		eventObservable.notifyObservers(event);
 	}
 
 	public MethodEntryRequestCriteria fireMethodEntryRequest(String classFilter) {
@@ -75,7 +85,11 @@ public class EventManager {
 	}
 
 	public void fireThreadStartRequest() {
-		createThreadStartRequest().enable();
+		createThreadStartRequest().setEnabled(true);
+	}
+
+	public void fireBreakpointEventRequest(String clazz, int lineNumber) throws AbsentInformationException {
+		createBreakpointRequest(clazz, lineNumber).enable();
 	}
 
 	public void removeMethodEntryRequest(String classFilter) {

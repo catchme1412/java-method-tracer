@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Scanner;
+import java.util.ServiceLoader;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -38,6 +39,7 @@ import com.sun.jdi.connect.IllegalConnectorArgumentsException;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.EventQueue;
 import com.sun.jdi.event.EventSet;
+import com.sun.jdi.request.EventRequest;
 import com.sun.tools.jdi.SocketAttachingConnector;
 
 /**
@@ -50,19 +52,23 @@ import com.sun.tools.jdi.SocketAttachingConnector;
  */
 public class Tracer extends RecursiveAction {
 
+	private static final long serialVersionUID = 1L;
 	private static Logger logger = Logger.getLogger(Tracer.class.getName());
 
-	private static final long serialVersionUID = 1L;
 	private EventQueue eventQueue;
 	private String machine;
 	private String port;
 	private VirtualMachine remoteVirtualMachine;
 	private EventManager eventManager;
-	private boolean done;
+	private static boolean done;
 	private Queue<Event> localQueue;
 
+	private Producer producer;
+
+	private Consumer consumer;
+
 	public Tracer() {
-		new Thread(new Command()).start();
+		new Thread(new CommandModule()).start();
 	}
 
 	class Producer extends RecursiveTask<Collection<Event>> {
@@ -95,14 +101,13 @@ public class Tracer extends RecursiveAction {
 				} catch (Exception e) {
 				} finally {
 					// if any thread is suspended invoke resume
-					if (eventSet != null) {
+					if (eventSet != null
+							&& eventSet.suspendPolicy() != EventRequest.SUSPEND_NONE) {
 						eventSet.resume();
 					}
-				} 
-				
+				}
 			}
 			return null;
-
 		}
 
 	}
@@ -110,7 +115,6 @@ public class Tracer extends RecursiveAction {
 	class Consumer extends RecursiveTask<Collection<Event>> {
 		private static final long serialVersionUID = 1L;
 		private final Queue<Event> localQueue;
-
 		Consumer(Queue<Event> queue) {
 			this.localQueue = queue;
 		}
@@ -120,7 +124,7 @@ public class Tracer extends RecursiveAction {
 			while (!done) {
 				if (!localQueue.isEmpty()) {
 					Event e = localQueue.remove();
-					// System.out.println("Consumer:" + e);
+					System.out.println("Consumer:" + e);
 					eventManager.notifyEvent(e);
 				}
 			}
@@ -128,40 +132,41 @@ public class Tracer extends RecursiveAction {
 		}
 	}
 
-	class Command implements Runnable {
+	class CommandModule implements Runnable {
 		private Scanner readUserInput;
 
-		Command() {
+		CommandModule() {
 		}
 
 		@Override
 		public void run() {
-			while (true) {
+			while (!done) {
 				String st = null;
-				System.out.println("Waiting for input");
-				// Create a scanner object
-				// Scanner is a predefined class in java that will be use to
-				// scan text
-				// System.in is mean, we will receive input from standard
-				// input stream
+				System.out.print("Waiting for input:");
+
 				readUserInput = new Scanner(System.in);
 				st = readUserInput.nextLine();
-				System.out.println(">>>>>>>>>>>>>>>>>>>readed the command" + st);
+				ServiceLoader<CommandModule> cmd = ServiceLoader.load(CommandModule.class);
+				CommandModule c = cmd.iterator().next();
+				//stop
+
+				System.out.println(">>>>>>>>>>>>>>>>>>>readed the command:"
+						+ st);
 			}
 		}
 	}
 
 	public static void main(String[] args) throws AbsentInformationException {
 		Tracer job = new Tracer();
-		System.out.println("OOOOOOOOOOOOOOOOOOoo");
 		job.setMachine("localhost");
 		job.setPort("8000");
 		job.setLocalQueue(new LinkedBlockingQueue<Event>());
 		job.hook();
 		job.getReady();
-		job.fireMethodEntry("java.lang.*");
+		job.fireMethodEntry("java.*");
 		job.fireThreadStartEvent();
-//		job.fireBreakPoint();
+		job.fireBreakPoint("java.lang.Thread", 1480);
+		job.resume();
 		final ForkJoinPool forkJoinPool = new ForkJoinPool();
 		forkJoinPool.invoke(job);
 		job.join();
@@ -170,21 +175,25 @@ public class Tracer extends RecursiveAction {
 	}
 
 	private void getReady() {
-		eventManager = new EventManager(remoteVirtualMachine.eventRequestManager());
+		eventManager = new EventManager(
+				remoteVirtualMachine.eventRequestManager());
 		eventQueue = remoteVirtualMachine.eventQueue();
+	}
+
+	public void resume() {
 		remoteVirtualMachine.resume();
 	}
 
 	@Override
 	protected void compute() {
 
-		Producer p = new Producer(eventQueue, localQueue);
-		Consumer c = new Consumer(localQueue);
-		c.fork();
-		p.fork();
+		producer = new Producer(eventQueue, localQueue);
+		consumer = new Consumer(localQueue);
+		consumer.fork();
+		producer.fork();
 		try {
-			p.get();
-			c.get();
+			producer.get();
+			consumer.get();
 		} catch (InterruptedException | ExecutionException e) {
 			e.printStackTrace();
 			System.exit(-1);
@@ -193,11 +202,12 @@ public class Tracer extends RecursiveAction {
 	}
 
 	private SocketAttachingConnector findSocketAttachingConnector() {
-		List<Connector> connectors = Bootstrap.virtualMachineManager().allConnectors();
+		List<Connector> connectors = Bootstrap.virtualMachineManager()
+				.allConnectors();
 		Iterator<Connector> iter = connectors.iterator();
 		while (iter.hasNext()) {
 			Connector connector = iter.next();
-			System.out.println("connector:" + connector);
+			logger.info("connector:" + connector);
 			if ("com.sun.jdi.SocketAttach".equals(connector.name())) {
 				return (SocketAttachingConnector) connector;
 			}
@@ -208,16 +218,24 @@ public class Tracer extends RecursiveAction {
 	public VirtualMachine hook() {
 		SocketAttachingConnector connector = findSocketAttachingConnector();
 
-		Map<String, Connector.Argument> connectorArguments = connector.defaultArguments();
+		Map<String, Connector.Argument> connectorArguments = connector
+				.defaultArguments();
 		setConnectionInfo(connectorArguments);
 
 		try {
 			remoteVirtualMachine = connector.attach(connectorArguments);
 			remoteVirtualMachine.setDebugTraceMode(VirtualMachine.TRACE_NONE);
 		} catch (IOException exc) {
-			throw new Error("Unable to hook to target JVM: [" + machine + ":" + port + "] due to " + exc
-					+ ".\n If the target JVM is running "
-					+ "please make sure no other debug is already hooked for the same JVM.");
+			throw new Error(
+					"Unable to hook to target JVM: ["
+							+ machine
+							+ ":"
+							+ port
+							+ "] due to "
+							+ exc
+							+ ".\n If the target JVM is running "
+							+ "please make sure no other debug is already hooked for the same JVM.");
+
 		} catch (IllegalConnectorArgumentsException exc) {
 			throw new Error("Unable to hook due to error: " + exc);
 		}
@@ -225,7 +243,8 @@ public class Tracer extends RecursiveAction {
 		return remoteVirtualMachine;
 	}
 
-	private void setConnectionInfo(Map<String, Connector.Argument> connectorArguments) {
+	private void setConnectionInfo(
+			Map<String, Connector.Argument> connectorArguments) {
 		Connector.Argument host = connectorArguments.get("hostname");
 		Connector.Argument portArg = connectorArguments.get("port");
 		Connector.Argument timeout = connectorArguments.get("timeout");
@@ -272,8 +291,9 @@ public class Tracer extends RecursiveAction {
 		// new PrintStackTraceAction()));
 	}
 
-	public void fireBreakPoint() throws AbsentInformationException {
-		//eventManager.createBreakpointRequest("java.lang.String", 2697);
+	public void fireBreakPoint(String className, int lineNumber)
+			throws AbsentInformationException {
+		eventManager.fireBreakpointEventRequest(className, lineNumber);
 	}
 
 	public void fireThreadStartEvent() {
@@ -290,9 +310,13 @@ public class Tracer extends RecursiveAction {
 				logger.info("\n\nStarting clean shutdown...");
 				try {
 					// tracer.stop();
+					done = true;
 					logger.info("\n\nClean shutdown complete.");
+					
 				} catch (Throwable e) {
-					logger.warning("Clean shutdown failed due to " + e.getMessage());
+					logger.warning("Clean shutdown failed due to "
+							+ e.getMessage());
+				} finally {
 				}
 			}
 		});
@@ -300,7 +324,10 @@ public class Tracer extends RecursiveAction {
 
 	public void stop() {
 		remoteVirtualMachine.dispose();
-		cancel(true);
+		done = true;
+		producer.cancel(false);
+		consumer.cancel(false);
+		this.complete(null);
 	}
 
 }

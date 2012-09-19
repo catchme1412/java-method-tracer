@@ -11,7 +11,7 @@ public class BreakpointEventObserver extends AbstractEventObserver {
 
 	@Override
 	public void execute(Event e) {
-		System.out.println("BreakpointEventObserver Entry observer:" + e);
+		log("BreakpointEventObserver Entry observer:" + e);
 	}
 
 	@Override

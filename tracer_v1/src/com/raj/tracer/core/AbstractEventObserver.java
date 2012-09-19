@@ -1,8 +1,7 @@
 package com.raj.tracer.core;
 
-import java.io.PrintStream;
-
 import com.raj.tracer.rule.Action;
+import com.sun.istack.internal.logging.Logger;
 import com.sun.jdi.event.Event;
 
 
@@ -12,16 +11,10 @@ public abstract class AbstractEventObserver implements EventObserver {
 
 	private Action onEventAction;
 	
-	private PrintStream printStream;
+	private Logger logger = Logger.getLogger(getClass());
 	
 	public AbstractEventObserver (Action onEventAction) {
 		this.onEventAction = onEventAction;
-//		try {
-//			File file = new File("/tmp/test.log");
-//			printStream = new PrintStream(file);
-//		} catch (FileNotFoundException e) {
-//			e.printStackTrace();
-//		}
 	}
 
 	public AbstractEventObserver(EventRequestCriteria eventRequestCriteria) {
@@ -40,9 +33,7 @@ public abstract class AbstractEventObserver implements EventObserver {
 
 	@Override
 	public void log(String msg) {
-//		printStream.append(msg);
-//		printStream.flush();
-		System.out.println(msg);
+		logger.info(msg);
 	}
 
 	public Action getOnEventAction() {
