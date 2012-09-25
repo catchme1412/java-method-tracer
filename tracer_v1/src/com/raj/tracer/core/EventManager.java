@@ -18,22 +18,24 @@ public class EventManager {
 
 	private EventRequestManager eventRequestManager;
 	private long eventCount;
-	private Observable eventObservable;
+	private long startTime;
+//	private Observable eventObservable;
 	private Queue<Event> eventList;
 
 	public EventManager(EventRequestManager eventRequestManager) {
 		eventList = new LinkedBlockingQueue<Event>();
 		this.eventRequestManager = eventRequestManager;
-		eventObservable = new Observable();
-		EventPrintAction eventPrintAction = new EventPrintAction();
-		ThreadStartRequestCriteria t = new ThreadStartRequestCriteria(eventPrintAction);
-		eventObservable.addObserver(new ThreadStartEventObserver(t));
-		BreakpointRequestCriteria b = new BreakpointRequestCriteria("java.lang.Thread", 673, eventPrintAction);
-		eventObservable.addObserver(new BreakpointEventObserver(b));
+//		eventObservable = new Observable();
+//		EventPrintAction eventPrintAction = new EventPrintAction();
+//		ThreadStartRequestCriteria t = new ThreadStartRequestCriteria(eventPrintAction);
+//		eventObservable.addObserver(new ThreadStartEventObserver(t));
+//		BreakpointRequestCriteria b = new BreakpointRequestCriteria("java.lang.Thread", 673, eventPrintAction);
+//		eventObservable.addObserver(new BreakpointEventObserver(b));
+		startTime = System.currentTimeMillis();
 	}
 
 	public void addObserver(EventObserver eventObserver) {
-		eventObservable.addObserver(eventObserver);
+//		eventObservable.addObserver(eventObserver);
 	}
 
 	public MethodEntryRequest createMethodEntryRequest(String classFilter) {
@@ -73,8 +75,8 @@ public class EventManager {
 
 	public void notifyEvent(Event event) {
 		eventCount++;
-		eventObservable.setChanged(true);
-		eventList.add(event);
+//		eventObservable.setChanged(true);
+//		eventList.add(event);
 //		eventObservable.notifyObservers(event);
 	}
 

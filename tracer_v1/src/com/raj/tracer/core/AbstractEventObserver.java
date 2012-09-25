@@ -33,7 +33,8 @@ public abstract class AbstractEventObserver implements EventObserver {
 
 	@Override
 	public void log(String msg) {
-		logger.info(msg);
+//		logger.info(msg);
+		System.out.println("OOOOOOOOOO" + msg);
 	}
 
 	public Action getOnEventAction() {

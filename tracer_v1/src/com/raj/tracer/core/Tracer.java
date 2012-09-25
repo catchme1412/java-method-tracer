@@ -60,6 +60,7 @@ public class Tracer extends RecursiveAction {
 	private String port;
 	private VirtualMachine remoteVirtualMachine;
 	private EventManager eventManager;
+	private Observable eventObservable;
 	private static boolean done;
 	private Queue<Event> localQueue;
 
@@ -101,22 +102,28 @@ public class Tracer extends RecursiveAction {
 				} catch (Exception e) {
 				} finally {
 					// if any thread is suspended invoke resume
-					if (eventSet != null
-							&& eventSet.suspendPolicy() != EventRequest.SUSPEND_NONE) {
+					if (eventSet != null && eventSet.suspendPolicy() != EventRequest.SUSPEND_NONE) {
 						eventSet.resume();
 					}
 				}
 			}
 			return null;
 		}
-
 	}
 
 	class Consumer extends RecursiveTask<Collection<Event>> {
 		private static final long serialVersionUID = 1L;
 		private final Queue<Event> localQueue;
+
 		Consumer(Queue<Event> queue) {
 			this.localQueue = queue;
+			eventObservable = new Observable();
+			EventPrintAction eventPrintAction = new EventPrintAction();
+			ThreadStartRequestCriteria t = new ThreadStartRequestCriteria(eventPrintAction);
+			eventObservable.addObserver(new ThreadStartEventObserver(t));
+			BreakpointRequestCriteria b = new BreakpointRequestCriteria("java.lang.Thread", 673, eventPrintAction);
+			eventObservable.addObserver(new BreakpointEventObserver(b));
+
 		}
 
 		@Override
@@ -124,8 +131,9 @@ public class Tracer extends RecursiveAction {
 			while (!done) {
 				if (!localQueue.isEmpty()) {
 					Event e = localQueue.remove();
-					System.out.println("Consumer:" + e);
-					eventManager.notifyEvent(e);
+//					System.out.println("Consumer:" + e);
+					eventObservable.notifyObservers(e);
+					// eventManager.notifyEvent(e);
 				}
 			}
 			return localQueue;
@@ -143,15 +151,13 @@ public class Tracer extends RecursiveAction {
 			while (!done) {
 				String st = null;
 				System.out.print("Waiting for input:");
-
 				readUserInput = new Scanner(System.in);
 				st = readUserInput.nextLine();
 				ServiceLoader<CommandModule> cmd = ServiceLoader.load(CommandModule.class);
 				CommandModule c = cmd.iterator().next();
-				//stop
+				// stop
 
-				System.out.println(">>>>>>>>>>>>>>>>>>>readed the command:"
-						+ st);
+				System.out.println(">>>>>>>>>>>>>>>>>>>readed the command:" + st);
 			}
 		}
 	}
@@ -162,7 +168,7 @@ public class Tracer extends RecursiveAction {
 		job.setPort("8000");
 		job.setLocalQueue(new LinkedBlockingQueue<Event>());
 		job.hook();
-		job.getReady();
+		job.initEventManager();
 		job.fireMethodEntry("java.*");
 		job.fireThreadStartEvent();
 		job.fireBreakPoint("java.lang.Thread", 1480);
@@ -174,9 +180,8 @@ public class Tracer extends RecursiveAction {
 		System.out.println("OVER");
 	}
 
-	private void getReady() {
-		eventManager = new EventManager(
-				remoteVirtualMachine.eventRequestManager());
+	private void initEventManager() {
+		eventManager = new EventManager(remoteVirtualMachine.eventRequestManager());
 		eventQueue = remoteVirtualMachine.eventQueue();
 	}
 
@@ -202,8 +207,7 @@ public class Tracer extends RecursiveAction {
 	}
 
 	private SocketAttachingConnector findSocketAttachingConnector() {
-		List<Connector> connectors = Bootstrap.virtualMachineManager()
-				.allConnectors();
+		List<Connector> connectors = Bootstrap.virtualMachineManager().allConnectors();
 		Iterator<Connector> iter = connectors.iterator();
 		while (iter.hasNext()) {
 			Connector connector = iter.next();
@@ -218,23 +222,16 @@ public class Tracer extends RecursiveAction {
 	public VirtualMachine hook() {
 		SocketAttachingConnector connector = findSocketAttachingConnector();
 
-		Map<String, Connector.Argument> connectorArguments = connector
-				.defaultArguments();
+		Map<String, Connector.Argument> connectorArguments = connector.defaultArguments();
 		setConnectionInfo(connectorArguments);
 
 		try {
 			remoteVirtualMachine = connector.attach(connectorArguments);
 			remoteVirtualMachine.setDebugTraceMode(VirtualMachine.TRACE_NONE);
 		} catch (IOException exc) {
-			throw new Error(
-					"Unable to hook to target JVM: ["
-							+ machine
-							+ ":"
-							+ port
-							+ "] due to "
-							+ exc
-							+ ".\n If the target JVM is running "
-							+ "please make sure no other debug is already hooked for the same JVM.");
+			throw new Error("Unable to hook to target JVM: [" + machine + ":" + port + "] due to " + exc
+					+ ".\n If the target JVM is running "
+					+ "please make sure no other debug is already hooked for the same JVM.");
 
 		} catch (IllegalConnectorArgumentsException exc) {
 			throw new Error("Unable to hook due to error: " + exc);
@@ -243,8 +240,7 @@ public class Tracer extends RecursiveAction {
 		return remoteVirtualMachine;
 	}
 
-	private void setConnectionInfo(
-			Map<String, Connector.Argument> connectorArguments) {
+	private void setConnectionInfo(Map<String, Connector.Argument> connectorArguments) {
 		Connector.Argument host = connectorArguments.get("hostname");
 		Connector.Argument portArg = connectorArguments.get("port");
 		Connector.Argument timeout = connectorArguments.get("timeout");
@@ -291,8 +287,7 @@ public class Tracer extends RecursiveAction {
 		// new PrintStackTraceAction()));
 	}
 
-	public void fireBreakPoint(String className, int lineNumber)
-			throws AbsentInformationException {
+	public void fireBreakPoint(String className, int lineNumber) throws AbsentInformationException {
 		eventManager.fireBreakpointEventRequest(className, lineNumber);
 	}
 
@@ -312,10 +307,9 @@ public class Tracer extends RecursiveAction {
 					// tracer.stop();
 					done = true;
 					logger.info("\n\nClean shutdown complete.");
-					
+
 				} catch (Throwable e) {
-					logger.warning("Clean shutdown failed due to "
-							+ e.getMessage());
+					logger.warning("Clean shutdown failed due to " + e.getMessage());
 				} finally {
 				}
 			}

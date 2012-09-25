@@ -28,10 +28,6 @@ public class Observable {
 	}
 
 	public void notifyObservers(Event event) {
-		if (!changed) {
-			return;
-		}
-		setChanged(false);
 
 		for (EventObserver observer : obs) {
 			if (observer.isMatch(event)) {
