@@ -73,13 +73,6 @@ public class EventManager {
 		return r;
 	}
 
-	public void notifyEvent(Event event) {
-		eventCount++;
-//		eventObservable.setChanged(true);
-//		eventList.add(event);
-//		eventObservable.notifyObservers(event);
-	}
-
 	public MethodEntryRequestCriteria fireMethodEntryRequest(String classFilter) {
 		MethodEntryRequestCriteria eventRequestCriteria = new MethodEntryRequestCriteria(classFilter, null);
 		eventRequestCriteria.createEventRequest(eventRequestManager).enable();

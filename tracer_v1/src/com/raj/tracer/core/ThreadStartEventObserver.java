@@ -1,7 +1,7 @@
 package com.raj.tracer.core;
 
 import com.sun.jdi.event.Event;
-import com.sun.jdi.request.MethodEntryRequest;
+import com.sun.jdi.request.ThreadStartRequest;
 
 public class ThreadStartEventObserver extends AbstractEventObserver {
 
@@ -16,7 +16,7 @@ public class ThreadStartEventObserver extends AbstractEventObserver {
 
 	@Override
 	public boolean isMatch(Event event) {
-		if (event.request() instanceof MethodEntryRequest) {
+		if (event.request() instanceof ThreadStartRequest) {
 			return true;
 		}
 		return false;

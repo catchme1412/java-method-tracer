@@ -121,9 +121,6 @@ public class Tracer extends RecursiveAction {
 			EventPrintAction eventPrintAction = new EventPrintAction();
 			ThreadStartRequestCriteria t = new ThreadStartRequestCriteria(eventPrintAction);
 			eventObservable.addObserver(new ThreadStartEventObserver(t));
-			BreakpointRequestCriteria b = new BreakpointRequestCriteria("java.lang.Thread", 673, eventPrintAction);
-			eventObservable.addObserver(new BreakpointEventObserver(b));
-
 		}
 
 		@Override
@@ -131,9 +128,8 @@ public class Tracer extends RecursiveAction {
 			while (!done) {
 				if (!localQueue.isEmpty()) {
 					Event e = localQueue.remove();
-//					System.out.println("Consumer:" + e);
+					// System.out.println("Consumer:" + e);
 					eventObservable.notifyObservers(e);
-					// eventManager.notifyEvent(e);
 				}
 			}
 			return localQueue;
@@ -169,9 +165,9 @@ public class Tracer extends RecursiveAction {
 		job.setLocalQueue(new LinkedBlockingQueue<Event>());
 		job.hook();
 		job.initEventManager();
-		job.fireMethodEntry("java.*");
+//		job.fireMethodEntry("java.*");
 		job.fireThreadStartEvent();
-		job.fireBreakPoint("java.lang.Thread", 1480);
+//		job.fireBreakPoint("java.lang.Thread", 1480);
 		job.resume();
 		final ForkJoinPool forkJoinPool = new ForkJoinPool();
 		forkJoinPool.invoke(job);
@@ -283,8 +279,6 @@ public class Tracer extends RecursiveAction {
 
 	public void fireMethodEntry(String classFilter) {
 		eventManager.fireMethodEntryRequest(classFilter);
-		// ruleProcessor.addRule(new BaseRule(new EventClause("MethodEntry"),
-		// new PrintStackTraceAction()));
 	}
 
 	public void fireBreakPoint(String className, int lineNumber) throws AbsentInformationException {
@@ -293,9 +287,6 @@ public class Tracer extends RecursiveAction {
 
 	public void fireThreadStartEvent() {
 		eventManager.fireThreadStartRequest();
-		// PrintStackTraceAction action = new PrintStackTraceAction();
-		// ruleProcessor.addRule(new BaseRule(new EventClause("ThreadStart"),
-		// action));
 	}
 
 	private static void addShutdownHook() {
