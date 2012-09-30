@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 
+import com.raj.tracer.core.event.EventRequestCriteria;
 import com.raj.tracer.rule.Action;
 import com.sun.jdi.event.Event;
 
