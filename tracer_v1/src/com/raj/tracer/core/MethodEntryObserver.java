@@ -1,5 +1,6 @@
 package com.raj.tracer.core;
 
+import com.raj.tracer.core.event.AbstractEventObserver;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.MethodEntryRequest;
 

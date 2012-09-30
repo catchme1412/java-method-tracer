@@ -1,4 +1,4 @@
-package com.raj.tracer.core;
+package com.raj.tracer.core.event;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +21,8 @@ public class Observable {
 			throw new IllegalArgumentException("Observer cannot be null");
 		}
 		obs.add(o);
+//		obs.add(o.)
+//		obs.add(o.getEventRequestCriteria().getOnEventAction())
 	}
 
 	public void deleteObserver(EventObserver o) {

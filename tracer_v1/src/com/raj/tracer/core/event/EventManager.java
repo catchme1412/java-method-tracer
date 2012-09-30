@@ -1,9 +1,10 @@
-package com.raj.tracer.core;
+package com.raj.tracer.core.event;
 
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import com.raj.tracer.core.MethodEntryRequestCriteria;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.event.Event;
@@ -75,7 +76,10 @@ public class EventManager {
 
 	public MethodEntryRequestCriteria fireMethodEntryRequest(String classFilter) {
 		MethodEntryRequestCriteria eventRequestCriteria = new MethodEntryRequestCriteria(classFilter, null);
-		eventRequestCriteria.createEventRequest(eventRequestManager).enable();
+		EventRequest r = eventRequestCriteria.createEventRequest(eventRequestManager);
+		r.setSuspendPolicy(EventRequest.SUSPEND_NONE);
+		r.enable();
+		System.out.println("FIRING method entry request:" + classFilter);
 		return eventRequestCriteria;
 	}
 

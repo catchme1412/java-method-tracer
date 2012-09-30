@@ -2,6 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="tracer_v1/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="/home/rkv/dev/jdk1.7.0_03/lib/tools.jar"/>
+	<classpathentry kind="lib" path="/home/rkv/dev/tools/jdk1.7.0_05/lib/tools.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -1,4 +1,4 @@
-package com.raj.tracer.core;
+package com.raj.tracer.core.event;
 
 import com.raj.tracer.rule.Action;
 import com.sun.jdi.request.EventRequest;
@@ -32,5 +32,7 @@ public abstract class EventRequestCriteria {
 	public void setOnEventAction(Action onEventAction) {
 		this.onEventAction = onEventAction;
 	}
+	
+	public abstract void fire(EventManager eventManager);
 
 }

@@ -31,6 +31,10 @@ import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
 import java.util.logging.Logger;
 
+import com.raj.tracer.core.event.EventManager;
+import com.raj.tracer.core.event.EventRequestCriteria;
+import com.raj.tracer.core.event.Observable;
+import com.raj.tracer.rule.Action;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.Bootstrap;
 import com.sun.jdi.VirtualMachine;
@@ -118,9 +122,15 @@ public class Tracer extends RecursiveAction {
 		Consumer(Queue<Event> queue) {
 			this.localQueue = queue;
 			eventObservable = new Observable();
-			EventPrintAction eventPrintAction = new EventPrintAction();
-			ThreadStartRequestCriteria t = new ThreadStartRequestCriteria(eventPrintAction);
+			Action event = null;//new EventPrintAction();
+			
+			Action onEventAction = new EventPrintAction();
+			EventRequestCriteria methodEntryRequest = new MethodEntryRequestCriteria("java.lang.*", onEventAction );
+			event = new EventExecutorAction(methodEntryRequest , eventManager);
+			
+			ThreadStartRequestCriteria t = new ThreadStartRequestCriteria(event);
 			eventObservable.addObserver(new ThreadStartEventObserver(t));
+			t.fire(eventManager);
 		}
 
 		@Override
@@ -128,7 +138,7 @@ public class Tracer extends RecursiveAction {
 			while (!done) {
 				if (!localQueue.isEmpty()) {
 					Event e = localQueue.remove();
-					// System.out.println("Consumer:" + e);
+					 System.out.println("Consumer:" + e);
 					eventObservable.notifyObservers(e);
 				}
 			}
@@ -165,8 +175,8 @@ public class Tracer extends RecursiveAction {
 		job.setLocalQueue(new LinkedBlockingQueue<Event>());
 		job.hook();
 		job.initEventManager();
-//		job.fireMethodEntry("java.*");
-		job.fireThreadStartEvent();
+		job.fireMethodEntry("java.lang.*");
+//		job.fireThreadStartEvent();
 //		job.fireBreakPoint("java.lang.Thread", 1480);
 		job.resume();
 		final ForkJoinPool forkJoinPool = new ForkJoinPool();

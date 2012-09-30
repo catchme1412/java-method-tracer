@@ -2,6 +2,8 @@ package com.raj.tracer.core;
 
 import java.util.List;
 
+import com.raj.tracer.core.event.EventManager;
+import com.raj.tracer.core.event.EventRequestCriteria;
 import com.raj.tracer.rule.Action;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ReferenceType;
@@ -32,6 +34,15 @@ public class BreakpointRequestCriteria extends EventRequestCriteria {
 			e.printStackTrace();
 		}
 		return r;
+	}
+
+	@Override
+	public void fire(EventManager eventManager) {
+		try {
+			eventManager.fireBreakpointEventRequest(className, lineNumber);
+		} catch (AbsentInformationException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

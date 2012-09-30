@@ -1,4 +1,4 @@
-package com.raj.tracer.core;
+package com.raj.tracer.core.event;
 
 import com.sun.jdi.event.Event;
 

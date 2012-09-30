@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import com.raj.tracer.core.event.EventManager;
+import com.raj.tracer.core.event.EventRequestCriteria;
 import com.raj.tracer.rule.Action;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
@@ -58,6 +60,11 @@ public class MethodEntryRequestCriteria extends EventRequestCriteria {
 
 	public void setExclusionFilterList(List<String> exclusionFilterList) {
 		this.exclusionFilterList = exclusionFilterList;
+	}
+
+	@Override
+	public void fire(EventManager eventManager) {
+		eventManager.fireMethodEntryRequest(inclusionFilterList.get(0));
 	}
 
 }
