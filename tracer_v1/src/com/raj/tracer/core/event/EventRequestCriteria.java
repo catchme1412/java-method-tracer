@@ -34,5 +34,7 @@ public abstract class EventRequestCriteria {
 	}
 	
 	public abstract void fire(EventManager eventManager);
+	
+	public abstract EventObserver getEventObserver();
 
 }

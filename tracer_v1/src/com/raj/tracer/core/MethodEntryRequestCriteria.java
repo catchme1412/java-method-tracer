@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.raj.tracer.core.event.EventManager;
+import com.raj.tracer.core.event.EventObserver;
 import com.raj.tracer.core.event.EventRequestCriteria;
 import com.raj.tracer.rule.Action;
 import com.sun.jdi.request.EventRequest;
@@ -65,6 +66,11 @@ public class MethodEntryRequestCriteria extends EventRequestCriteria {
 	@Override
 	public void fire(EventManager eventManager) {
 		eventManager.fireMethodEntryRequest(inclusionFilterList.get(0));
+	}
+
+	@Override
+	public EventObserver getEventObserver() {
+		return new MethodEntryObserver(this);
 	}
 
 }

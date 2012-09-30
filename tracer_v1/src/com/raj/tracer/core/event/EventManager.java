@@ -84,7 +84,9 @@ public class EventManager {
 	}
 
 	public void fireThreadStartRequest() {
-		createThreadStartRequest().setEnabled(true);
+		ThreadStartRequest r = createThreadStartRequest();
+		r.setSuspendPolicy(EventRequest.SUSPEND_NONE);
+		r.setEnabled(true);
 	}
 
 	public void fireBreakpointEventRequest(String clazz, int lineNumber) throws AbsentInformationException {

@@ -122,14 +122,13 @@ public class Tracer extends RecursiveAction {
 		Consumer(Queue<Event> queue) {
 			this.localQueue = queue;
 			eventObservable = new Observable();
-			Action event = null;//new EventPrintAction();
-			
+			Action action = null;// new EventPrintAction();
+
 			Action onEventAction = new EventPrintAction();
-			EventRequestCriteria methodEntryRequest = new MethodEntryRequestCriteria("java.lang.*", onEventAction );
-			event = new EventExecutorAction(methodEntryRequest , eventManager);
-			
-			ThreadStartRequestCriteria t = new ThreadStartRequestCriteria(event);
-			eventObservable.addObserver(new ThreadStartEventObserver(t));
+			EventRequestCriteria methodEntryRequest = new MethodEntryRequestCriteria("java.lang.*", onEventAction);
+			action = new EventExecutorAction(methodEntryRequest, eventManager);
+			ThreadStartRequestCriteria t = new ThreadStartRequestCriteria(action);
+			eventObservable.add(t);
 			t.fire(eventManager);
 		}
 
@@ -138,7 +137,7 @@ public class Tracer extends RecursiveAction {
 			while (!done) {
 				if (!localQueue.isEmpty()) {
 					Event e = localQueue.remove();
-					 System.out.println("Consumer:" + e);
+					System.out.println("Consumer:" + e);
 					eventObservable.notifyObservers(e);
 				}
 			}
@@ -175,9 +174,9 @@ public class Tracer extends RecursiveAction {
 		job.setLocalQueue(new LinkedBlockingQueue<Event>());
 		job.hook();
 		job.initEventManager();
-		job.fireMethodEntry("java.lang.*");
-//		job.fireThreadStartEvent();
-//		job.fireBreakPoint("java.lang.Thread", 1480);
+		// job.fireMethodEntry("java.lang.*");
+		// job.fireThreadStartEvent();
+		// job.fireBreakPoint("java.lang.Thread", 1480);
 		job.resume();
 		final ForkJoinPool forkJoinPool = new ForkJoinPool();
 		forkJoinPool.invoke(job);

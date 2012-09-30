@@ -1,6 +1,7 @@
 package com.raj.tracer.core;
 
 import com.raj.tracer.core.event.EventManager;
+import com.raj.tracer.core.event.EventObserver;
 import com.raj.tracer.core.event.EventRequestCriteria;
 import com.raj.tracer.rule.Action;
 import com.sun.jdi.request.EventRequest;
@@ -24,5 +25,10 @@ public class ThreadStartRequestCriteria extends EventRequestCriteria {
 
 	public void fire(EventManager eventManager) {
 		eventManager.fireThreadStartRequest();
+	}
+
+	@Override
+	public EventObserver getEventObserver() {
+		return new ThreadStartEventObserver(this);
 	}
 }

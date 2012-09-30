@@ -16,11 +16,18 @@ public class Observable {
 		obs = new ArrayList<EventObserver>();
 	}
 
+	public void add(EventRequestCriteria t) {
+		obs.add(t.getEventObserver());
+		if (t.getOnEventAction().getEventObserver() != null) {
+			obs.add(t.getOnEventAction().getEventObserver());
+		}
+	}
 	public void addObserver(EventObserver o) {
 		if (o == null) {
 			throw new IllegalArgumentException("Observer cannot be null");
 		}
 		obs.add(o);
+//		obs.add(o)
 //		obs.add(o.)
 //		obs.add(o.getEventRequestCriteria().getOnEventAction())
 	}

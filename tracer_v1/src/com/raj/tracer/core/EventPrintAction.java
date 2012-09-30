@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 
+import com.raj.tracer.core.event.EventObserver;
 import com.raj.tracer.core.event.EventRequestCriteria;
 import com.raj.tracer.rule.Action;
 import com.sun.jdi.event.Event;
@@ -29,6 +30,12 @@ public class EventPrintAction implements Action {
 	}
 
 	public EventRequestCriteria getEventRequestCriteria() {
+		return null;
+	}
+
+	@Override
+	public EventObserver getEventObserver() {
+		// TODO Auto-generated method stub
 		return null;
 	}
 
