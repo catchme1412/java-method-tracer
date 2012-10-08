@@ -5,6 +5,7 @@ import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import com.raj.tracer.core.MethodEntryRequestCriteria;
+import com.sun.istack.internal.logging.Logger;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.event.Event;
@@ -17,6 +18,8 @@ import com.sun.jdi.request.ThreadStartRequest;
 
 public class EventManager {
 
+	private Logger logger = Logger.getLogger(EventManager.class);
+	
 	private EventRequestManager eventRequestManager;
 	private long eventCount;
 	private long startTime;
@@ -95,6 +98,12 @@ public class EventManager {
 
 	public void removeMethodEntryRequest(String classFilter) {
 		eventRequestManager.methodEntryRequests().remove(createMethodEntryRequest(classFilter));
+	}
+
+	public void stop() {
+		eventRequestManager.virtualMachine().dispose();
+		logger.info("Dispose request send to remote JVM");
+		System.exit(0);
 	}
 
 }

@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Scanner;
-import java.util.ServiceLoader;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -73,7 +72,6 @@ public class Tracer extends RecursiveAction {
 	private Consumer consumer;
 
 	public Tracer() {
-		new Thread(new CommandModule()).start();
 	}
 
 	class Producer extends RecursiveTask<Collection<Event>> {
@@ -90,7 +88,7 @@ public class Tracer extends RecursiveAction {
 
 		@Override
 		protected Collection<Event> compute() {
-			System.out.println("Staring producer");
+			logger.fine("Staring producer");
 
 			EventSet eventSet = null;
 			while (!done) {
@@ -147,22 +145,24 @@ public class Tracer extends RecursiveAction {
 
 	class CommandModule implements Runnable {
 		private Scanner readUserInput;
-
-		CommandModule() {
+		private CommandInvoker invoker;
+		
+		public CommandModule(EventManager eventManager) {
+			this.invoker = new CommandInvoker(eventManager);
 		}
 
 		@Override
 		public void run() {
 			while (!done) {
-				String st = null;
-				System.out.print("Waiting for input:");
+				String cmd = null;
+				System.out.print("Input:>");
 				readUserInput = new Scanner(System.in);
-				st = readUserInput.nextLine();
-				ServiceLoader<CommandModule> cmd = ServiceLoader.load(CommandModule.class);
-				CommandModule c = cmd.iterator().next();
+				cmd = readUserInput.nextLine();
+//				ServiceLoader<CommandModule> cmd = ServiceLoader.load(CommandModule.class);
+//				CommandModule c = cmd.iterator().next();
+				invoker.execute(cmd.split(" "));
 				// stop
-
-				System.out.println(">>>>>>>>>>>>>>>>>>>readed the command:" + st);
+				System.out.println(">>>>>>>>>>readed the command:" + cmd);
 			}
 		}
 	}
@@ -188,6 +188,7 @@ public class Tracer extends RecursiveAction {
 	private void initEventManager() {
 		eventManager = new EventManager(remoteVirtualMachine.eventRequestManager());
 		eventQueue = remoteVirtualMachine.eventQueue();
+		new Thread(new CommandModule(eventManager)).start();
 	}
 
 	public void resume() {
@@ -216,7 +217,7 @@ public class Tracer extends RecursiveAction {
 		Iterator<Connector> iter = connectors.iterator();
 		while (iter.hasNext()) {
 			Connector connector = iter.next();
-			logger.info("connector:" + connector);
+			logger.fine("connector:" + connector);
 			if ("com.sun.jdi.SocketAttach".equals(connector.name())) {
 				return (SocketAttachingConnector) connector;
 			}

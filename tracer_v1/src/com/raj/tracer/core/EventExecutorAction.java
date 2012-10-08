@@ -30,8 +30,7 @@ public class EventExecutorAction implements Action {
 
 	@Override
 	public EventObserver getEventObserver() {
-		// TODO Auto-generated method stub
-		return null;
+		return eventRequestCriteria.getEventObserver();
 	}
 
 }
