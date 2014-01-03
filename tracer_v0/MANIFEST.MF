@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Rsrc-Class-Path: ./ tools.jar
+Class-Path: .
+Rsrc-Main-Class: com.tracer.Driver
+Main-Class: org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader
+

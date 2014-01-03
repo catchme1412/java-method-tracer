@@ -1,0 +1,17 @@
+excludeList=com.orbitz.monitoring.*,\
+com.orbitz.container.*,\
+com.orbitz.ojf.*,\
+com.orbitz.cache.util.*,\
+com.orbitz.olc.*,\
+com.orbitz.dc.core.*,\
+com.orbitz.hotel.content.model.*,\
+com.orbitz.logging.*,\
+com.orbitz.enumeration.*,\
+com.orbitz.ft.*,\
+com.orbitz.tools.profiler.*,\
+com.orbitz.ds.config.lib.*,\
+com.orbitz.reference.*,\
+com.orbitz.configloader.*,\
+com.orbitz.dc.host.odp.util.*,\
+com.orbitz.hotel.content.model.*,\
+com.orbitz.tools.*

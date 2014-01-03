@@ -1,0 +1,2 @@
+excludeList=com.orbitz.monitoring.*,\
+com.orbitz.container.*
